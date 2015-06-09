@@ -43,6 +43,7 @@
 								<li><a href="#demo-keep-rendering-sort">Keep rendering sort</a></li>
 								<li><a href="#demo-undo-redo">Undo / Redo</a></li>
 								<li><a href="#demo-multiple-destinations">Multiple destinations</a></li>
+								<li><a href="#demo-optgroup">With <code>optgroup</code></a></li>
 							</ul>
 						</li>
 						<li><a href="#download">Download</a></li>
@@ -734,6 +735,35 @@ jQuery(document).ready(function($) {
 &lt;/script&gt;
 </pre>
 				</div>
+			</div>
+
+			<h4 id="demo-optgroup">With optgroup</h4>
+			
+			<div class="row">
+				<div class="col-sm-5">
+					<select name="from" id="optgroup" class="form-control" size="8" multiple="multiple">
+						<optgroup label="Swedish Cars">
+							<option value="volvo">Volvo</option>
+							<option value="saab">Saab</option>
+						</optgroup>
+						<optgroup label="German Cars">
+							<option value="mercedes">Mercedes</option>
+							<option value="audi">Audi</option>
+						</optgroup>
+					</select>
+				</div>
+				
+				<div class="col-sm-2">
+					<button type="button" id="optgroup_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
+					<button type="button" id="optgroup_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
+					<button type="button" id="optgroupt_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
+					<button type="button" id="optgroup_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
+				</div>
+				
+				<div class="col-sm-5">
+					<select name="to" id="optgroup_to" class="form-control" size="8" multiple="multiple"></select>
+				</div>
+			</div>
 		</div>
 		
 		<div id="download" class="container">
@@ -758,7 +788,7 @@ jQuery(document).ready(function($) {
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js"></script>
-	<script type="text/javascript" src="js/multiselect.min.js"></script>
+	<script type="text/javascript" src="js/multiselect.js"></script>
 	
 	<script>
 		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -873,6 +903,10 @@ jQuery(document).ready(function($) {
 					}
 				}
 			}
+		});
+
+		$('#optgroup').multiselect({
+			sort: false
 		});
 	});
 	

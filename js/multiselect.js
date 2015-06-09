@@ -206,7 +206,7 @@ if (typeof jQuery === 'undefined') {
 			
 			moveToRight: function( options, event, silent, skipStack ) {
 				var self = this;
-
+				
 				if ( typeof self.callbacks.moveToRight == 'function' ) {
 					return self.callbacks.moveToRight( self, options, event, silent, skipStack );
 				} else {
@@ -215,7 +215,23 @@ if (typeof jQuery === 'undefined') {
 							return false;
 						}
 					}
-					
+
+					if (options.parentNode.nodeName == 'OPTGROUP') {
+						var $leftGroup = $(options.parentNode);
+						var $rightGroup = self.right.find('optgroup[label="' + $leftGroup.prop('label') + '"]');
+
+						if (!$rightGroup.length) {
+							$rightGroup = $(options.parentNode).clone();
+							$rightGroup.children().remove();
+						}
+
+						options = $rightGroup.append(options);
+
+						if (!$leftGroup.find('option').length) {
+							$leftGroup.remove();
+						}
+					}
+
 					self.right.append(options);
 
 					if ( !skipStack ) {
@@ -246,7 +262,23 @@ if (typeof jQuery === 'undefined') {
 							return false;
 						}
 					}
-						
+					
+					if (options.parentNode.nodeName == 'OPTGROUP') {
+						var $rightGroup = $(options.parentNode);
+						var $leftGroup = self.left.find('optgroup[label="' + $rightGroup.prop('label') + '"]');
+
+						if (!$leftGroup.length) {
+							$leftGroup = $(options.parentNode).clone();
+							$leftGroup.children().remove();
+						}
+
+						options = $leftGroup.append(options);
+
+						if (!$rightGroup.find('option').length) {
+							$rightGroup.remove();
+						}
+					}
+
 					self.left.append(options);
 					
 					if ( !skipStack ) {
