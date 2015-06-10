@@ -41,8 +41,9 @@ if (typeof jQuery === 'undefined') {
 		**/
 		function Multiselect( $select, settings ) {
 			var id = $select.prop('id');
-			this.left = $select;
-			this.right = $( settings.right ).length ? $( settings.right ) : $('#' + id + '_to');
+			this.$left = $select;
+			this.$right = $( settings.right ).length ? $( settings.right ) : $('#' + id + '_to');
+
 			this.actions = {
 				leftAll: 		$( settings.leftAll ).length ? $( settings.leftAll ) : $('#' + id + '_leftAll'),
 				rightAll: 		$( settings.rightAll ).length ? $( settings.rightAll ) : $('#' + id + '_rightAll'),
@@ -86,29 +87,24 @@ if (typeof jQuery === 'undefined') {
 						return $(a).data('position') > $(b).data('position') ? 1 : -1;
 					};
 
-					self.left.find('option').each(function(index, option) {
+					self.$left.find('option').each(function(index, option) {
 						$(option).data('position', index);
 					});
 
-					self.right.find('option').each(function(index, option) {
+					self.$right.find('option').each(function(index, option) {
 						$(option).data('position', index);
 					});
 				}
 
 				if ( typeof self.callbacks.startUp == 'function' ) {
-					self.callbacks.startUp( self.left, self.right );
+					self.callbacks.startUp( self.$left, self.$right );
 				}
 				
 				if ( !self.skipInitSort && typeof self.callbacks.sort == 'function' ) {
-					self.left.find('option')
-						.sort(self.callbacks.sort)
-						.appendTo(self.left);
+					self.$left._sort(self.callbacks.sort);
 					
-					self.right
-						.each(function(i, select) {
-						$(select).find('option')
-							.sort(self.callbacks.sort)
-							.appendTo(select);
+					self.$right.each(function(i, select) {
+						$(select)._sort(self.callbacks.sort);
 					});
 				}
 				
@@ -118,37 +114,37 @@ if (typeof jQuery === 'undefined') {
 			events: function( actions ) {
 				var self = this;
 				
-				self.left.on('dblclick', 'option', function(e) {
+				self.$left.on('dblclick', 'option', function(e) {
 					e.preventDefault();
 					self.moveToRight(this, e);
 				});
 				
-				self.right.on('dblclick', 'option', function(e) {
+				self.$right.on('dblclick', 'option', function(e) {
 					e.preventDefault();
 					self.moveToLeft(this, e);
 				});
 
 				// select all the options from left and right side
 				// when submiting the parent form
-				self.right.closest('form').on('submit', function(e) {
-					self.left.children().prop('selected', true);
-					self.right.children().prop('selected', true);
+				self.$right.closest('form').on('submit', function(e) {
+					self.$left.children().prop('selected', true);
+					self.$right.children().prop('selected', true);
 				});
 				
 				// dblclick support for IE
 				if ( navigator.userAgent.match(/MSIE/i)  || navigator.userAgent.indexOf('Trident/') > 0 || navigator.userAgent.indexOf('Edge/') > 0) {
-					self.left.dblclick(function(e) {
+					self.$left.dblclick(function(e) {
 						actions.rightSelected.trigger('click');
 					});
 					
-					self.right.dblclick(function(e) {
+					self.$right.dblclick(function(e) {
 						actions.leftSelected.trigger('click');
 					});
 				}
 				
 				actions.rightSelected.on('click', function(e) {
 					e.preventDefault();
-					var options = self.left.find('option:selected');
+					var options = self.$left.find('option:selected');
 					
 					if ( options ) {
 						self.moveToRight(options, e);
@@ -159,7 +155,7 @@ if (typeof jQuery === 'undefined') {
 				
 				actions.leftSelected.on('click', function(e) {
 					e.preventDefault();
-					var options = self.right.find('option:selected');
+					var options = self.$right.find('option:selected');
 					
 					if ( options ) {
 						self.moveToLeft(options, e);
@@ -170,7 +166,7 @@ if (typeof jQuery === 'undefined') {
 				
 				actions.rightAll.on('click', function(e) {
 					e.preventDefault();
-					var options = self.left.find('option');
+					var options = self.$left.find('option');
 					
 					if ( options ) {
 						self.moveToRight(options, e);
@@ -182,7 +178,7 @@ if (typeof jQuery === 'undefined') {
 				actions.leftAll.on('click', function(e) {
 					e.preventDefault();
 					
-					var options = self.right.find('option');
+					var options = self.$right.find('option');
 					
 					if ( options ) {
 						self.moveToLeft(options, e);
@@ -211,14 +207,14 @@ if (typeof jQuery === 'undefined') {
 					return self.callbacks.moveToRight( self, options, event, silent, skipStack );
 				} else {
 					if ( typeof self.callbacks.beforeMoveToRight == 'function' && !silent ) {
-						if ( !self.callbacks.beforeMoveToRight( self.left, self.right, options ) ) {
+						if ( !self.callbacks.beforeMoveToRight( self.$left, self.$right, options ) ) {
 							return false;
 						}
 					}
 
 					if (options.parentNode.nodeName == 'OPTGROUP') {
 						var $leftGroup = $(options.parentNode);
-						var $rightGroup = self.right.find('optgroup[label="' + $leftGroup.prop('label') + '"]');
+						var $rightGroup = self.$right.find('optgroup[label="' + $leftGroup.prop('label') + '"]');
 
 						if (!$rightGroup.length) {
 							$rightGroup = $(options.parentNode).clone();
@@ -227,12 +223,10 @@ if (typeof jQuery === 'undefined') {
 
 						options = $rightGroup.append(options);
 
-						if (!$leftGroup.find('option').length) {
-							$leftGroup.remove();
-						}
+						$leftGroup.removeIfEmpty();
 					}
 
-					self.right.append(options);
+					self.$right.move(options);
 
 					if ( !skipStack ) {
 						self.undoStack.push(['right', options ]);
@@ -240,11 +234,11 @@ if (typeof jQuery === 'undefined') {
 					}
 					
 					if ( typeof self.callbacks.sort == 'function' && !silent ) {
-						self.right.find('option').sort(self.callbacks.sort).appendTo(self.right);
+						self.$right._sort(self.callbacks.sort);
 					}
 					
 					if ( typeof self.callbacks.afterMoveToRight == 'function' && !silent ){
-						self.callbacks.afterMoveToRight( self.left, self.right, options );
+						self.callbacks.afterMoveToRight( self.$left, self.$right, options );
 					}
 					
 					return self;
@@ -258,14 +252,14 @@ if (typeof jQuery === 'undefined') {
 					return self.callbacks.moveToLeft( self, options, event, silent, skipStack );
 				} else {
 					if ( typeof self.callbacks.beforeMoveToLeft == 'function' && !silent ) {
-						if ( !self.callbacks.beforeMoveToLeft( self.left, self.right, options ) ) {
+						if ( !self.callbacks.beforeMoveToLeft( self.$left, self.$right, options ) ) {
 							return false;
 						}
 					}
 					
 					if (options.parentNode.nodeName == 'OPTGROUP') {
 						var $rightGroup = $(options.parentNode);
-						var $leftGroup = self.left.find('optgroup[label="' + $rightGroup.prop('label') + '"]');
+						var $leftGroup = self.$left.find('optgroup[label="' + $rightGroup.prop('label') + '"]');
 
 						if (!$leftGroup.length) {
 							$leftGroup = $(options.parentNode).clone();
@@ -274,12 +268,10 @@ if (typeof jQuery === 'undefined') {
 
 						options = $leftGroup.append(options);
 
-						if (!$rightGroup.find('option').length) {
-							$rightGroup.remove();
-						}
+						$rightGroup.removeIfEmpty();
 					}
 
-					self.left.append(options);
+					self.$left.move(options);
 					
 					if ( !skipStack ) {
 						self.undoStack.push(['left', options ]);
@@ -287,11 +279,11 @@ if (typeof jQuery === 'undefined') {
 					}
 					
 					if ( typeof self.callbacks.sort == 'function' && !silent ) {
-						self.left.find('option').sort(self.callbacks.sort).appendTo(self.left);		
+						self.$left._sort(self.callbacks.sort);		
 					}
 					
 					if ( typeof self.callbacks.afterMoveToLeft == 'function' && !silent ) {
-						self.callbacks.afterMoveToLeft( self.left, self.right, options );
+						self.callbacks.afterMoveToLeft( self.$left, self.$right, options );
 					}
 					
 					return self;
@@ -345,7 +337,14 @@ if (typeof jQuery === 'undefined') {
 			**/
 			startUp: function( $left, $right ) {
 				$right.find('option').each(function(index, option) {
-					$left.find('option[value="' + option.value + '"]').remove();
+					var $option = $left.find('option[value="' + option.value + '"]');
+					var $parent = $option.parent();
+
+					$option.remove();
+
+					if ($parent.prop('tagName') == 'OPTGROUP') {
+						$parent.removeIfEmpty();
+					}
 				});
 			},
 
@@ -428,5 +427,34 @@ if (typeof jQuery === 'undefined') {
 			
 			return new Multiselect($this, settings);
 		});
+	};
+
+	// append options
+	// then set the selected attribute to false
+	$.fn.move = function( options ) {
+		this
+			.append(options)
+			.find('option')
+			.prop('selected', false);
+
+		return this;
+	};
+
+	$.fn.removeIfEmpty = function() {
+		if (!this.children().length) {
+			this.remove();
+		}
+
+		return this;
+	};
+
+	// sort options then reappend them to the select
+	$.fn._sort = function(callback) {
+		this
+			.find('option')
+			.sort(callback)
+			.appendTo(this);
+
+		return this;
 	};
 }));

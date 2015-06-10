@@ -750,6 +750,7 @@ jQuery(document).ready(function($) {
 							<option value="mercedes">Mercedes</option>
 							<option value="audi">Audi</option>
 						</optgroup>
+						<option value="1">C++</option>
 					</select>
 				</div>
 				
@@ -761,7 +762,13 @@ jQuery(document).ready(function($) {
 				</div>
 				
 				<div class="col-sm-5">
-					<select name="to" id="optgroup_to" class="form-control" size="8" multiple="multiple"></select>
+					<select name="to" id="optgroup_to" class="form-control" size="8" multiple="multiple">
+						<optgroup label="German Cars">
+							<option value="mercedes">Mercedes</option>
+							<option value="audi">Audi</option>
+						</optgroup>
+						<option value="1">C++</option>
+					</select>
 				</div>
 			</div>
 		</div>
@@ -904,10 +911,12 @@ jQuery(document).ready(function($) {
 				}
 			}
 		});
-
+		
+		console.time('opt');
 		$('#optgroup').multiselect({
 			sort: false
 		});
+		console.timeEnd('opt');
 	});
 	
 	function scrollTo( id ) {
